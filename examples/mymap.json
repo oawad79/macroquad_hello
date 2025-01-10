@@ -43,7 +43,7 @@
         {
          "columns":32,
          "firstgid":1,
-         "image":"examples/mytileset.png",
+         "image":"mytileset.png",
          "imageheight":1024,
          "imagewidth":1024,
          "margin":0,
@@ -66,7 +66,7 @@
         {
          "columns":27,
          "firstgid":1025,
-         "image":"examples/atlas.png",
+         "image":"atlas.png",
          "imageheight":1024,
          "imagewidth":1024,
          "margin":0,

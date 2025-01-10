@@ -1,7 +1,6 @@
+
 use macroquad::prelude::*;
-
 use macroquad_tiled as tiled;
-
 use macroquad_platformer::*;
 
 
@@ -9,11 +8,6 @@ struct Player {
     collider: Actor,
     speed: Vec2,
 }
-
-// struct Platform {
-//     collider: Solid,
-//     speed: f32,
-// }
 
 #[macroquad::main("Dave")]
 async fn main() {
@@ -25,10 +19,10 @@ async fn main() {
 
     let tiled_map_json = load_string("examples/mymap.json").await.unwrap();
     let tiled_map = tiled::load_map(&tiled_map_json, 
-        &[("examples/mytileset.png", tileset),
-                    ("examples/atlas.png", player)], &[])
+        &[("mytileset.png", tileset),
+                    ("atlas.png", player)], &[])
                     .unwrap();
-
+        
     let mut static_colliders = vec![];
     for (_x, _y, tile) in tiled_map.tiles("Tile Layer 1", None) {
         static_colliders.push(if tile.is_some() {
@@ -38,19 +32,15 @@ async fn main() {
         });
     }
 
-    
+ 
     let mut world = World::new();
-    world.add_static_tiled_layer(static_colliders,32., 32., 40, 1);
+    world.add_static_tiled_layer(static_colliders,32., 32.,30, 1);
 
     let mut player = Player {
-        collider: world.add_actor(vec2(12.0, 115.0), 8, 8),
+        collider: world.add_actor(vec2(50.0, 120.0), 8, 8),
         speed: vec2(0., 0.),
     };
 
-    // let mut platform = Platform {
-    //     collider: world.add_solid(vec2(170.0, 130.0), 32, 8),
-    //     speed: 50.,
-    // };
     let camera = Camera2D::from_display_rect(Rect::new(0.0, 152.0, 320.0, -152.0));
 
     loop {
@@ -60,24 +50,12 @@ async fn main() {
     
         tiled_map.draw_tiles("Tile Layer 1", Rect::new(0.0, 0.0, 320.0, 152.0), None);
 
-        
-        // draw platform
-        // {
-        //     let pos = world.solid_pos(platform.collider);
-        //     tiled_map.spr_ex(
-        //         "tileset",
-        //         Rect::new(6.0 * 8.0, 0.0, 32.0, 8.0),
-        //         Rect::new(pos.x, pos.y, 32.0, 8.0),
-        //     )
-        // }
-
         //draw player
         {
             // sprite id from tiled
-            const PLAYER_SPRITE: u32 = 6;
+            const PLAYER_SPRITE: u32 = 5;
 
             let pos = world.actor_pos(player.collider);
-            println!("POS = {pos}");
             if player.speed.x >= 0.0 {
                 tiled_map.spr("atlas", PLAYER_SPRITE, Rect::new(pos.x, pos.y, 8.0, 8.0));
             } else {
@@ -92,13 +70,14 @@ async fn main() {
         // player movement control
         {
             let pos = world.actor_pos(player.collider);
-            //let on_ground = world.collide_check(player.collider, pos + vec2(0., 1.));
-            let on_ground = true;
-
+            
+            let on_ground = world.collide_check(player.collider, pos + vec2(0., 1.));
+            
             if on_ground == false {
                 player.speed.y += 500. * get_frame_time();
-            }
-
+                
+            } 
+            
             if is_key_down(KeyCode::Right) {
                 player.speed.x = 100.0;
             } else if is_key_down(KeyCode::Left) {
@@ -113,22 +92,19 @@ async fn main() {
                 }
             }
 
+            
+
+
+            if is_mouse_button_pressed(MouseButton::Left) {
+                let (mouse_x,mouse_y) = mouse_position();
+                println!("(x, y) = ({}, {})",mouse_x, mouse_y);
+                let camera_coords = camera.screen_to_world(vec2(mouse_x, mouse_y));
+                println!("Camera coordinates: x: {}, y: {}", camera_coords.x, camera_coords.y);
+            }
+
             world.move_h(player.collider, player.speed.x * get_frame_time());
             world.move_v(player.collider, player.speed.y * get_frame_time());
         }
-
-        //platform movement
-        // {
-        //     world.solid_move(platform.collider, platform.speed * get_frame_time(), 0.0);
-        //     let pos = world.solid_pos(platform.collider);
-        //     if platform.speed > 1. && pos.x >= 220. {
-        //         platform.speed *= -1.;
-        //     }
-        //     if platform.speed < -1. && pos.x <= 150. {
-        //         platform.speed *= -1.;
-        //     }
-        // }
-
         next_frame().await
     }
 }

@@ -1,8 +1,6 @@
-
 use macroquad::prelude::*;
 use macroquad_tiled as tiled;
 use macroquad_platformer::*;
-
 
 struct Player {
     collider: Actor,
@@ -23,6 +21,7 @@ async fn main() {
                     ("atlas.png", player)], &[])
                     .unwrap();
         
+
     let mut static_colliders = vec![];
     for (_x, _y, tile) in tiled_map.tiles("Tile Layer 1", None) {
         static_colliders.push(if tile.is_some() {
@@ -37,32 +36,32 @@ async fn main() {
     world.add_static_tiled_layer(static_colliders,32., 32.,30, 1);
 
     let mut player = Player {
-        collider: world.add_actor(vec2(50.0, 120.0), 8, 8),
+        collider: world.add_actor(vec2(50.0, 130.0), 32, 32),
         speed: vec2(0., 0.),
     };
 
-    let camera = Camera2D::from_display_rect(Rect::new(0.0, 152.0, 320.0, -152.0));
+    let camera = Camera2D::from_display_rect(Rect::new(0.0, 640.0, 960.0, -640.0));
 
     loop {
         clear_background(BLACK);
         
         set_camera(&camera);
     
-        tiled_map.draw_tiles("Tile Layer 1", Rect::new(0.0, 0.0, 320.0, 152.0), None);
+        tiled_map.draw_tiles("Tile Layer 1", Rect::new(0.0, 0.0, 960.0, 640.0), None);
 
         //draw player
         {
             // sprite id from tiled
-            const PLAYER_SPRITE: u32 = 5;
+            const PLAYER_SPRITE: u32 = 2;
 
             let pos = world.actor_pos(player.collider);
             if player.speed.x >= 0.0 {
-                tiled_map.spr("atlas", PLAYER_SPRITE, Rect::new(pos.x, pos.y, 8.0, 8.0));
+                tiled_map.spr("tileset", PLAYER_SPRITE, Rect::new(pos.x, pos.y, 32.0, 32.0));
             } else {
                 tiled_map.spr(
-                    "atlas",
+                    "tileset",
                     PLAYER_SPRITE,
-                    Rect::new(pos.x + 8.0, pos.y, -8.0, 8.0),
+                    Rect::new(pos.x + 32.0, pos.y, -32.0, 32.0),
                 );
             }
         }
@@ -73,7 +72,8 @@ async fn main() {
             
             let on_ground = world.collide_check(player.collider, pos + vec2(0., 1.));
             
-            if on_ground == false {
+          
+            if !on_ground {
                 player.speed.y += 500. * get_frame_time();
                 
             } 
@@ -86,14 +86,9 @@ async fn main() {
                 player.speed.x = 0.;
             }
 
-            if is_key_pressed(KeyCode::Space) {
-                if on_ground {
-                    player.speed.y = -120.;
-                }
+            if is_key_pressed(KeyCode::Space) && on_ground {
+                player.speed.y = -120.;
             }
-
-            
-
 
             if is_mouse_button_pressed(MouseButton::Left) {
                 let (mouse_x,mouse_y) = mouse_position();
